@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using Xunit;
 
 namespace AnonymousInterface.Tests;
-public class UnitTest : CSharpSourceGeneratorTest<AnonymousInterfaceGenerator, XUnitVerifier>
+public class UnitTest
 {
     [Fact]
     public async Task Test1Async()
     {
-        TestState.Sources.Add(@"using System;
+        var sourceCode = @"using System;
 
 namespace Todo
 {
@@ -32,8 +32,9 @@ namespace Todo
             ola.SayHello();
         }
     }
-}");
-        TestState.GeneratedSources.Add((@"AnonymousInterface\AnonymousInterface.AnonymousInterfaceGenerator\CoolGuy.generated.cs", SourceText.From(@"using System;
+}";
+        var fileName = @"AnonymousInterface\AnonymousInterface.AnonymousInterfaceGenerator\CoolGuy.generated.cs";
+        var expectedSourceGenerated = @"using System;
 namespace Todo
 {
     public static partial class CoolGuy
@@ -50,7 +51,15 @@ namespace Todo
             public string SayHello() => ""this is the hello"";
         }
     }
-}", Encoding.UTF8)));
-        await RunAsync();
+}";
+
+        await new CSharpSourceGeneratorTest<AnonymousInterfaceGenerator, XUnitVerifier>
+        {
+            TestState =
+            {
+                Sources ={sourceCode},
+                GeneratedSources ={(fileName, SourceText.From(expectedSourceGenerated, Encoding.UTF8))}
+            }
+        }.RunAsync();
     }
 }
